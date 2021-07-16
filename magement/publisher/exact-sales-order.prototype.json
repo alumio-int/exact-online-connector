@@ -1,0 +1,31 @@
+{
+  "$schema": "https://di.schema.mediact.com/register.prototype.json",
+  "type": "publisher",
+  "identifier": "Exact-sales-order-create",
+  "name": "Exact - Sales Order - Create",
+  "object": {
+    "prototype": "http-publisher",
+    "parameters": {
+      "request": {
+        "uri": "/&{division}/salesorder/SalesOrders",
+        "method": "post",
+        "payload": "&{request}"
+      },
+      "client": "%{client}"
+    }
+  },
+  "schema": {
+    "properties": {
+      "client": {
+        "title": "HTTP Client",
+        "ui": {
+          "di:type": "http-client",
+          "ui:placeholder": "Default client"
+        }
+      }
+    },
+    "required": [
+      "client"
+    ]
+  }
+}

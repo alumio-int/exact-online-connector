@@ -1,0 +1,208 @@
+{
+  "$schema": "https://di.schema.mediact.com/register.prototype.json",
+  "type": "list-transformer",
+  "identifier": "customer-exact-availability",
+  "name": "Customer Exact Availability",
+  "description": "Checking and Creating Customer in Exact",
+  "object": {
+    "prototype": "chain",
+    "parameters": {
+      "transformers": [
+        {
+          "prototype": "data",
+          "parameters": {
+            "transformers": [
+              {
+                "prototype": "list-mapper",
+                "parameters": {
+                  "mappers": [
+                    {
+                      "prototype": "list-inherit-from",
+                      "parameters": {
+                        "array": {
+                          "division": "%{division}"
+                        }
+                      }
+                    }
+                  ],
+                  "accessor": {
+                    "prototype": "pattern",
+                    "parameters": []
+                  }
+                }
+              },
+              {
+                "prototype": "merger",
+                "parameters": {
+                  "template": {
+                    "accountData": "&{d.results}"
+                  },
+                  "transformer": {
+                    "prototype": "http-transformer",
+                    "parameters": {
+                      "client": "%{client}",
+                      "request": {
+                        "uri": "/&{division}/crm/Accounts",
+                        "method": "get",
+                        "payload": {
+                          "$filter": "Email eq '&{customer.email}'",
+                          "$select": "ID,Email"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "prototype": "pattern-copy",
+                "parameters": {
+                  "pattern": "accountData.0.ID",
+                  "replacement": "accountDataID"
+                }
+              },
+              {
+                "prototype": "conditional",
+                "parameters": {
+                  "filters": [
+                    {
+                      "prototype": "value-condition",
+                      "parameters": {
+                        "accessor": {
+                          "prototype": "pattern",
+                          "parameters": {
+                            "pattern": "accountData.0"
+                          }
+                        },
+                        "conditions": [
+                          {
+                            "prototype": "empty"
+                          }
+                        ]
+                      }
+                    }
+                  ],
+                  "transformers": [
+                    {
+                      "prototype": "pattern-copy",
+                      "parameters": {
+                        "pattern": "billingAddress.streetAddress.0",
+                        "replacement": "request.AddressLine1"
+                      }
+                    },
+                    {
+                      "prototype": "pattern-copy",
+                      "parameters": {
+                        "pattern": "billingAddress.streetAddress.1",
+                        "replacement": "request.AddressLine2"
+                      }
+                    },
+                    {
+                      "prototype": "pattern-copy",
+                      "parameters": {
+                        "pattern": "billingAddress.streetAddress.2",
+                        "replacement": "request.AddressLine3"
+                      }
+                    },
+                    {
+                      "prototype": "list-mapper",
+                      "parameters": {
+                        "mappers": [
+                          {
+                            "prototype": "list-inherit-from",
+                            "parameters": {
+                              "array": {
+                                "request": {
+                                  "City": "&{billingAddress.addressLocality}",
+                                  "Name": "&{customer.givenName} &{customer.familyName}",
+                                  "Email": "&{customer.email}",
+                                  "Phone": "&{billingAddress.telephone}",
+                                  "Status": "C",
+                                  "Country": "&{billingAddress.addressCountry}",
+                                  "Postcode": "&{billingAddress.postalCode}"
+                                }
+                              }
+                            }
+                          }
+                        ],
+                        "accessor": {
+                          "prototype": "key",
+                          "parameters": []
+                        }
+                      }
+                    },
+                    {
+                      "prototype": "merger",
+                      "parameters": {
+                        "template": {
+                          "accountData": "&{d}"
+                        },
+                        "transformer": {
+                          "prototype": "http-transformer",
+                          "parameters": {
+                            "client": "%{client}",
+                            "request": {
+                              "uri": "/&{division}/crm/Accounts",
+                              "method": "post",
+                              "payload": "&{request}"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "prototype": "pattern-copy",
+                      "parameters": {
+                        "pattern": "accountData.ID",
+                        "replacement": "accountDataID"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "prototype": "data",
+          "parameters": {
+            "transformers": [
+              {
+                "prototype": "key-filter",
+                "parameters": {
+                  "accessor": {
+                    "prototype": "key",
+                    "parameters": {
+                      "keys": [
+                        "accountData",
+                        "request"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "schema": {
+    "properties": {
+      "division": {
+        "type": "string",
+        "title": "Division"
+      },
+      "client": {
+        "title": "HTTP Client",
+        "ui": {
+          "di:type": "http-client",
+          "ui:placeholder": "Default client"
+        }
+      }
+    },
+    "required": [
+      "division",
+      "client"
+    ]
+  }
+}

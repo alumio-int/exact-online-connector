@@ -1,0 +1,179 @@
+{
+  "$schema": "https://di.schema.mediact.com/register.prototype.json",
+  "type": "list-transformer",
+  "identifier": "order-exact-restructure",
+  "name": "Exact Order restructure",
+  "description": "Order Schema org to Exact Order restructure",
+  "object": {
+    "prototype": "chain",
+    "parameters": {
+      "transformers": [
+        {
+          "prototype": "data",
+          "parameters": {
+            "transformers": [
+              {
+                "prototype": "list-mapper",
+                "parameters": {
+                  "mappers": [
+                    {
+                      "prototype": "list-inherit-from",
+                      "parameters": {
+                        "array": {
+                          "request": {
+                            "OrderDate": "&{orderDate.dateCreated}",
+                            "OrderedBy": "&{accountDataID}",
+                            "SalesOrderLines": "&{orderedItem}"
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "accessor": {
+                    "prototype": "key",
+                    "parameters": []
+                  }
+                }
+              },
+              {
+                "prototype": "value-mapper",
+                "parameters": {
+                  "mappers": [
+                    {
+                      "prototype": "format-date",
+                      "parameters": {
+                        "toFormat": "Y-m-d"
+                      }
+                    }
+                  ],
+                  "accessor": {
+                    "prototype": "pattern",
+                    "parameters": {
+                      "pattern": "request.OrderDate"
+                    }
+                  }
+                }
+              },
+              {
+                "prototype": "accessor-copy",
+                "parameters": {
+                  "source": {
+                    "prototype": "key",
+                    "parameters": {
+                      "keys": [
+                        "division"
+                      ]
+                    }
+                  },
+                  "destination": {
+                    "prototype": "children",
+                    "parameters": {
+                      "pattern": "request.SalesOrderLines.*",
+                      "accessor": {
+                        "prototype": "key",
+                        "parameters": []
+                      }
+                    }
+                  },
+                  "stripEnclosures": true
+                }
+              }
+            ]
+          }
+        },
+        {
+          "prototype": "node",
+          "parameters": {
+            "accessor": {
+              "prototype": "pattern",
+              "parameters": {
+                "pattern": "request.SalesOrderLines.*"
+              }
+            },
+            "nodeTransformers": [
+              {
+                "prototype": "list-mapper",
+                "parameters": {
+                  "mappers": [
+                    {
+                      "prototype": "list-inherit-from",
+                      "parameters": {
+                        "array": {
+                          "Item": "&{orderedItem.sku}",
+                          "Quantity": "&{orderQuantity}",
+                          "UnitPrice": "&{orderedItem.offers.price}",
+                          "Description": "&{orderedItem.name}"
+                        }
+                      }
+                    }
+                  ],
+                  "accessor": {
+                    "prototype": "key",
+                    "parameters": []
+                  }
+                }
+              },
+              {
+                "prototype": "merger",
+                "parameters": {
+                  "template": {
+                    "code": "&{@}"
+                  },
+                  "transformer": {
+                    "prototype": "http-transformer",
+                    "parameters": {
+                      "client": "%{client}",
+                      "request": {
+                        "uri": "/&{division}/logistics/Items?$select=ID,Description,Code&$filter=startswith(Code, '&{Item}') eq true",
+                        "method": "get",
+                        "payload": "&{@}"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "prototype": "pattern-move",
+                "parameters": {
+                  "pattern": "code.d.results.0.ID",
+                  "replacement": "Item"
+                }
+              },
+              {
+                "prototype": "key-filter",
+                "parameters": {
+                  "accessor": {
+                    "prototype": "key",
+                    "parameters": {
+                      "keys": [
+                        "@type",
+                        "orderedItem",
+                        "orderQuantity",
+                        "code",
+                        "division"
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "schema": {
+    "properties": {
+      "client": {
+        "title": "HTTP Client",
+        "ui": {
+          "di:type": "http-client",
+          "ui:placeholder": "Default client"
+        }
+      }
+    },
+    "required": [
+      "client"
+    ]
+  }
+}
