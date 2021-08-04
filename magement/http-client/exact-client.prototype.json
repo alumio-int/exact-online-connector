@@ -38,9 +38,14 @@
             "threshold": 50,
             "remainingHeader": "X-RateLimit-Minutely-Remaining"
           }
+        },
+        {
+          "class": "Http\\Client\\Common\\Plugin\\AuthenticationPlugin",
+          "arguments": {
+            "authentication":"%{authentication}"
+          }
         }
-      ],
-      "authentications": "%{authentication}"
+      ]
     },
     "meta": {
       "client": {
