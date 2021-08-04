@@ -1,0 +1,69 @@
+{
+  "$schema": "https://di.schema.mediact.com/register.prototype.json",
+  "type": "http-client",
+  "identifier": "exact-http-client",
+  "name": "Exact Client",
+  "object": {
+    "class": "Http\\Client\\Common\\PluginClient",
+    "arguments": {
+      "plugins": [
+        {
+          "prototype": "base-uri",
+          "parameters": {
+            "uri": {
+              "parameters": "%{baseUrl}"
+            },
+            "options": []
+          }
+        },
+        {
+          "prototype": "header-set",
+          "parameters": {
+            "headers": {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            }
+          }
+        },
+        {
+          "prototype": "logger",
+          "parameters": {
+            "formatter": "long"
+          }
+        },
+        {
+          "prototype": "rate-limit-header",
+          "parameters": {
+            "sleep": 2,
+            "threshold": 50,
+            "remainingHeader": "X-RateLimit-Minutely-Remaining"
+          }
+        }
+      ],
+      "authentications": "%{authentication}"
+    },
+    "meta": {
+      "client": {
+        "type": "Psr\\Http\\Client\\ClientInterface"
+      },
+      "plugins": {
+        "type": "Http\\Client\\Common\\Plugin[]"
+      }
+    }
+  },
+  "schema": {
+    "type": "object",
+    "properties": {
+      "baseUrl": {
+        "type": "string",
+        "title": "Exact Base URL"
+      },
+      "authentication": {
+        "title": "Authentication",
+        "ui": {
+          "di:type": "http-authentication"
+        }
+      }
+    }
+  }
+}

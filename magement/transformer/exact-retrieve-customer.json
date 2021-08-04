@@ -1,9 +1,9 @@
 {
   "$schema": "https://di.schema.mediact.com/register.prototype.json",
   "type": "list-transformer",
-  "identifier": "customer-exact-availability",
-  "name": "Customer Exact Availability",
-  "description": "Checking and Creating Customer in Exact",
+  "identifier": "exact-retrieve-customer",
+  "name": "Exact - Customer - Retrieve customer",
+  "description": "Checking Existed Customer and Creating Customer in Exact",
   "object": {
     "prototype": "chain",
     "parameters": {

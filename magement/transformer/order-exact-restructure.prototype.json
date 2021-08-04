@@ -1,9 +1,9 @@
 {
   "$schema": "https://di.schema.mediact.com/register.prototype.json",
   "type": "list-transformer",
-  "identifier": "order-exact-restructure",
-  "name": "Exact Order restructure",
-  "description": "Order Schema org to Exact Order restructure",
+  "identifier": "alumio-order-restructure-to-exact",
+  "name": "Exact - Order - Alumio order to Exact",
+  "description": "Alumio Order to Exact restructure",
   "object": {
     "prototype": "chain",
     "parameters": {
@@ -112,68 +112,11 @@
                     "parameters": []
                   }
                 }
-              },
-              {
-                "prototype": "merger",
-                "parameters": {
-                  "template": {
-                    "code": "&{@}"
-                  },
-                  "transformer": {
-                    "prototype": "http-transformer",
-                    "parameters": {
-                      "client": "%{client}",
-                      "request": {
-                        "uri": "/&{division}/logistics/Items?$select=ID,Description,Code&$filter=startswith(Code, '&{Item}') eq true",
-                        "method": "get",
-                        "payload": "&{@}"
-                      }
-                    }
-                  }
-                }
-              },
-              {
-                "prototype": "pattern-move",
-                "parameters": {
-                  "pattern": "code.d.results.0.ID",
-                  "replacement": "Item"
-                }
-              },
-              {
-                "prototype": "key-filter",
-                "parameters": {
-                  "accessor": {
-                    "prototype": "key",
-                    "parameters": {
-                      "keys": [
-                        "@type",
-                        "orderedItem",
-                        "orderQuantity",
-                        "code",
-                        "division"
-                      ]
-                    }
-                  }
-                }
               }
             ]
           }
         }
       ]
     }
-  },
-  "schema": {
-    "properties": {
-      "client": {
-        "title": "HTTP Client",
-        "ui": {
-          "di:type": "http-client",
-          "ui:placeholder": "Default client"
-        }
-      }
-    },
-    "required": [
-      "client"
-    ]
   }
 }
